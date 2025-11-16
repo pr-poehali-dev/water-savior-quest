@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -178,6 +178,23 @@ const Index = () => {
   const [isComplete, setIsComplete] = useState(false);
   const { toast } = useToast();
 
+  const correctSoundRef = useRef<HTMLAudioElement | null>(null);
+  const wrongSoundRef = useRef<HTMLAudioElement | null>(null);
+  const victorySoundRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    correctSoundRef.current = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGWi78OeeSwwKU6fh77ZiHQU5kdXzzn0pBSR2x+/glEILFF+z6OyrWBUIRp/e8sFuIgYsgc3y2og3Bxppu+/nnk0MCk6n4u+2ZB0FOZHU8s98JwUkd8jw36lNFhJftOnn0mpYFAhJot/yvnAiBiyAz+/dfjYJGWi37+eeTgwJUKjh8Lh2HgU5k9XyzX4oBSJzx+/gl0QKFF6z6OysWRQJR6Dd8r1wIwUqf8zv3YY3BxpoufDpnlANCE6l4e+1ZB4FOpHU8s19KAUhcsfv35FECxResujrrVkVCUag3fK+cSQGKn/M792FNwgZaLnw6p5PCQlOpd/wuHYfBTuR1fPNfigFInbH79+RRAsPXrTp66xaFQlFn97yv3IkBSp/zO/dhTcIGWi68Oqf0BccE1+06eutWhUIRZ/e8sBxJAYqf8zw3oU2Bxhmu+/pnlAMCk2m3u+2ZR0GPJHt8sx+KAUhdsfw35FEDBFftOnn0mlXFAlKot7yu3EnBSl+zO/eg0kOG2m77+ygT0YKAR1etOnnrFwWCUej3vK+cyQFKX7L7991RQsSX7Lo561ZFQlGod3zv3Ij');
+    wrongSoundRef.current = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAgICAgICAgICAgICAgICAgICAgICfn5+fn5+fn5+fn5+fn5+fn5+fj4+Pj4+Pj4+Pj4+Pj4+Pj4+Pj4eHh4eHh4eHh4eHh4eHh4eHh3d3d3d3d3d3d3d3d3d3d3d3d2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ1dXV1dXV1dXV1dXV1dXV1dXV1VVVVVVVVVVVVVVVVVVVVVVVVVVTk5OTk5OTk5OTk5OTk5OTk5ORkZGRkZGRkZGRkZGRkZGRkZGRkY+Pj4+Pj4+Pj4+Pj4+Pj4+Pj42NjY2NjY2NjY2NjY2NjY2NjY2Li4uLi4uLi4uLi4uLi4uLi4mJiYmJiYmJiYmJiYmJiYmJiYeHh4eHh4eHh4eHh4eHh4eHhYWFhYWFhYWFhYWFhYWFhYWFg4ODg4ODg4ODg4ODg4ODg4OBgYGBgYGBgYGBgYGBgYGBgYAAAAAAAAAAAAAAAAAAAAAAA==');
+    victorySoundRef.current = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACAgICAgICAgICAgICAgICAgICfn5+fn5+fn5+fn5+fn5+fo6Ojo6Ojo6Ojo6Ojo6Ojo6Ojo6urq6urq6urq6urq6urq6urs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozu7u7u7u7u7u7u7u7u7u7u7u7v7+/v7+/v7+/v7+/v7+/v7+/v8fHx8fHx8fHx8fHx8fHx8fHx8/Pz8/Pz8/Pz8/Pz8/Pz8/Pz9fX19fX19fX19fX19fX19fX19/f39/f39/f39/f39/f39/f3+fn5+fn5+fn5+fn5+fn5+fn5+/v7+/v7+/v7+/v7+/v7+/v7/f39/f39/f39/f39/f39/f3///////////////////////////////');
+  }, []);
+
+  const playSound = (soundRef: React.MutableRefObject<HTMLAudioElement | null>) => {
+    if (soundRef.current) {
+      soundRef.current.currentTime = 0;
+      soundRef.current.play().catch(() => {});
+    }
+  };
+
   const question = questions[currentQuestion];
   const progress = (energyCollected / 15) * 100;
 
@@ -208,6 +225,7 @@ const Index = () => {
     }
 
     if (isCorrect) {
+      playSound(correctSoundRef);
       setEnergyCollected(prev => prev + 1);
       toast({
         title: '✨ Молодец!',
@@ -222,9 +240,11 @@ const Index = () => {
           setShowHint(false);
         } else {
           setIsComplete(true);
+          playSound(victorySoundRef);
         }
       }, 1500);
     } else {
+      playSound(wrongSoundRef);
       setShowHint(true);
       toast({
         title: 'Попробуй ещё раз!',
